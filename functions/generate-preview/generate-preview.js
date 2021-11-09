@@ -1,13 +1,16 @@
 /* eslint-disable no-unused-vars */
-const chromium = require('chrome-aws-lambda')
+const chromium = require('chrome-aws-lambda');
+const puppeteer = require('puppeteer-core')
 
 exports.handler = async function (event, context) {
   // parse body of POSY request to valid object and
   // use object destructuring to obtain target url
   const { targetURL } = JSON.parse(event.body)
 
-  const browser = await chromium.puppeteer.launch({
-    executablePath: await chromium.executablePath
+  const browser = await puppeteer.launch({
+    args: chromium.args,
+    executablePath: process.env.EXCECUTABLE_PATH || await chromium.executablePath,
+    headless: true
   })
 
   // open new page in browser
@@ -63,7 +66,7 @@ exports.handler = async function (event, context) {
     // close the browser
     await browser.close()
 
-    // send the page details 
+    // send the page details
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -75,7 +78,7 @@ exports.handler = async function (event, context) {
 
   } catch (error) {
 
-    // if any error occurs, close the browser instance 
+    // if any error occurs, close the browser instance
     // and send an error code
     await browser.close()
     return {
